@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -36,7 +36,7 @@ export const ChartWidget: React.FC<ChartWidgetProps> = ({ widget }) => {
   const chartType = widget.config.chartType || 'line';
   const timeInterval = widget.config.timeInterval || 'daily';
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     if (!widget.apiKey || !widget.apiEndpoint) {
       setError('API key and symbol are required. Please configure the widget in Settings.');
       return;
@@ -54,8 +54,8 @@ export const ChartWidget: React.FC<ChartWidgetProps> = ({ widget }) => {
       );
       
       setData(result);
-    } catch (err: any) {
-      setError(err.message || 'Failed to fetch chart data');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to fetch chart data');
     } finally {
       setIsLoading(false);
     }
@@ -68,7 +68,7 @@ export const ChartWidget: React.FC<ChartWidgetProps> = ({ widget }) => {
       const interval = setInterval(fetchData, widget.refreshInterval * 1000);
       return () => clearInterval(interval);
     }
-  }, [widget.apiKey, widget.apiEndpoint, timeInterval, widget.refreshInterval]);
+  }, [fetchData, widget.refreshInterval]);
 
   const chartData = {
     labels: data.map(item => item.timestamp.toLocaleDateString()),
@@ -115,7 +115,7 @@ export const ChartWidget: React.FC<ChartWidgetProps> = ({ widget }) => {
         cornerRadius: 6,
         displayColors: false,
         callbacks: {
-          title: (context: any) => {
+          title: (context: any[]) => {
             return context[0].label;
           },
           label: (context: any) => {
@@ -161,8 +161,8 @@ export const ChartWidget: React.FC<ChartWidgetProps> = ({ widget }) => {
             color: 'rgba(0, 0, 0, 0.1)',
           },
           ticks: {
-            callback: function(value: any) {
-              return '$' + value.toFixed(2);
+            callback: function(value: string | number) {
+              return '$' + Number(value).toFixed(2);
             },
             font: {
               size: 11,
@@ -170,7 +170,9 @@ export const ChartWidget: React.FC<ChartWidgetProps> = ({ widget }) => {
           },
         },
       },
-    };  return (
+    };
+
+  return (
     <WidgetWrapper
       widget={widget}
       isLoading={isLoading}

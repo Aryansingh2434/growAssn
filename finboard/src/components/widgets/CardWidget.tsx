@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { TrendingUp, TrendingDown } from 'lucide-react';
 import { Widget, FinancialData } from '../../types';
 import { WidgetWrapper } from './WidgetWrapper';
@@ -17,7 +17,7 @@ export const CardWidget: React.FC<CardWidgetProps> = ({ widget }) => {
   const cardType = widget.config.cardType || 'watchlist';
   const showTrend = widget.config.showTrend !== false;
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     if (!widget.apiKey) {
       setError('API key is required. Please add your API key in Settings.');
       return;
@@ -55,12 +55,12 @@ export const CardWidget: React.FC<CardWidgetProps> = ({ widget }) => {
       }
       
       setData(result);
-    } catch (err: any) {
-      setError(err.message || 'Failed to fetch data');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to fetch data');
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [widget.apiKey, cardType, widget.apiEndpoint]);
 
   useEffect(() => {
     fetchData();
@@ -69,7 +69,7 @@ export const CardWidget: React.FC<CardWidgetProps> = ({ widget }) => {
       const interval = setInterval(fetchData, widget.refreshInterval * 1000);
       return () => clearInterval(interval);
     }
-  }, [widget.apiKey, widget.refreshInterval, cardType, widget.apiEndpoint]);
+  }, [fetchData, widget.refreshInterval]);
 
   const renderCard = (item: FinancialData, index: number) => (
     <div
@@ -123,18 +123,18 @@ export const CardWidget: React.FC<CardWidgetProps> = ({ widget }) => {
     </div>
   );
 
-  const getCardTitle = () => {
-    switch (cardType) {
-      case 'gainers':
-        return 'Top Gainers';
-      case 'performance':
-        return 'Performance Data';
-      case 'financial':
-        return 'Financial Data';
-      default:
-        return 'Watchlist';
-    }
-  };
+  // const getCardTitle = () => {
+  //   switch (cardType) {
+  //     case 'gainers':
+  //       return 'Top Gainers';
+  //     case 'performance':
+  //       return 'Performance Data';
+  //     case 'financial':
+  //       return 'Financial Data';
+  //     default:
+  //       return 'Watchlist';
+  //   }
+  // };
 
   return (
     <WidgetWrapper

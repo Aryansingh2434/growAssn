@@ -99,7 +99,7 @@ export const AddWidgetModal: React.FC<AddWidgetModalProps> = ({ onClose, existin
     }
   };
 
-  const updateFormData = (field: string, value: any) => {
+  const updateFormData = (field: string, value: string | number) => {
     setFormData(prev => ({ ...prev, [field]: value }));
     if (errors[field]) {
       setErrors(prev => ({ ...prev, [field]: '' }));

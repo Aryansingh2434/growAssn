@@ -87,7 +87,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose }) => {
         // In a real app, you'd dispatch actions to restore the config
         console.log('Imported config:', config);
         alert('Configuration imported successfully!');
-      } catch (error) {
+      } catch {
         alert('Failed to import configuration. Please check the file format.');
       }
     };
