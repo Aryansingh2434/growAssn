@@ -28,7 +28,7 @@ class FinancialApiService {
     try {
       await this.checkRateLimit('alphavantage');
       
-      const params: any = {
+      const params: Record<string, string> = {
         function: function_name,
         symbol,
         apikey: apiKey,
@@ -84,7 +84,7 @@ class FinancialApiService {
       return {
         data: null,
         status: 'error',
-        message: error.message || 'Failed to fetch data from Alpha Vantage',
+        message: error instanceof Error ? error.message : 'Failed to fetch data from Alpha Vantage',
       };
     }
   }
@@ -92,7 +92,7 @@ class FinancialApiService {
   async fetchFinnhubData(
     apiKey: string,
     endpoint: string,
-    params: Record<string, any> = {}
+    params: Record<string, string | number> = {}
   ): Promise<ApiResponse> {
     try {
       await this.checkRateLimit('finnhub');
@@ -106,11 +106,11 @@ class FinancialApiService {
         data: response.data,
         status: 'success',
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
       return {
         data: null,
         status: 'error',
-        message: error.message || 'Failed to fetch data from Finnhub',
+        message: error instanceof Error ? error.message : 'Failed to fetch data from Finnhub',
       };
     }
   }
@@ -131,8 +131,8 @@ class FinancialApiService {
           throw new Error(response.message || 'Failed to fetch data from Alpha Vantage');
         }
         
-        if (response.status === 'success' && response.data && response.data['Global Quote']) {
-          const quote = response.data['Global Quote'];
+        if (response.status === 'success' && response.data && (response.data as Record<string, any>)['Global Quote']) {
+          const quote = (response.data as Record<string, any>)['Global Quote'];
           return {
             symbol: quote['01. symbol'],
             price: parseFloat(quote['05. price']),
@@ -148,8 +148,8 @@ class FinancialApiService {
           throw new Error(response.message || 'Failed to fetch data from Finnhub');
         }
         
-        if (response.status === 'success' && response.data && response.data.c) {
-          const data = response.data;
+        if (response.status === 'success' && response.data && (response.data as Record<string, any>).c) {
+          const data = response.data as Record<string, any>;
           return {
             symbol,
             price: data.c,
@@ -161,7 +161,7 @@ class FinancialApiService {
       }
       
       throw new Error(`No valid data received for symbol ${symbol}. Please check the symbol or try again later.`);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error(`Error fetching stock quote for ${symbol}:`, error);
       throw error; // Re-throw to let widget handle the error
     }
@@ -197,8 +197,8 @@ class FinancialApiService {
           throw new Error(response.message || 'Failed to fetch market gainers from Alpha Vantage');
         }
         
-        if (response.status === 'success' && response.data && response.data.top_gainers) {
-          return response.data.top_gainers.slice(0, 10).map((stock: any) => ({
+        if (response.status === 'success' && response.data && (response.data as Record<string, any>).top_gainers) {
+          return (response.data as Record<string, any>).top_gainers.slice(0, 10).map((stock: Record<string, string>) => ({
             symbol: stock.ticker,
             price: parseFloat(stock.price),
             change: parseFloat(stock.change_amount),
@@ -210,7 +210,7 @@ class FinancialApiService {
       }
       
       throw new Error('No market gainer data available. Please try again later.');
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error fetching market gainers:', error);
       throw error; // Re-throw to let widget handle the error
     }
@@ -259,16 +259,16 @@ class FinancialApiService {
           );
           
           if (timeSeriesKey) {
-            const timeSeries = response.data[timeSeriesKey];
+            const timeSeries = (response.data as Record<string, any>)[timeSeriesKey];
             return Object.entries(timeSeries)
               .slice(0, 100) // Limit to last 100 data points
-              .map(([date, data]: [string, any]) => ({
+              .map(([date, data]: [string, unknown]) => ({
                 timestamp: new Date(date),
-                open: parseFloat(data['1. open']),
-                high: parseFloat(data['2. high']),
-                low: parseFloat(data['3. low']),
-                close: parseFloat(data['4. close']),
-                volume: parseInt(data['5. volume']),
+                open: parseFloat((data as Record<string, string>)['1. open']),
+                high: parseFloat((data as Record<string, string>)['2. high']),
+                low: parseFloat((data as Record<string, string>)['3. low']),
+                close: parseFloat((data as Record<string, string>)['4. close']),
+                volume: parseInt((data as Record<string, string>)['5. volume']),
               }))
               .reverse(); // Chronological order
           }
@@ -276,7 +276,7 @@ class FinancialApiService {
       }
       
       throw new Error(`No chart data available for ${symbol}. Please check the symbol or try again later.`);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error fetching chart data:', error);
       throw error; // Re-throw to let widget handle the error
     }

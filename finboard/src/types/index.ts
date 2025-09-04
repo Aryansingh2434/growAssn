@@ -38,7 +38,7 @@ export interface TableColumn {
 }
 
 export interface ApiResponse {
-  data: any;
+  data: unknown;
   status: 'success' | 'error';
   message?: string;
   rateLimitRemaining?: number;

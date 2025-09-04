@@ -52,14 +52,14 @@ export const WidgetConfig: React.FC<WidgetConfigProps> = ({ widget, onSave, onCl
     onSave(formData);
   };
 
-  const updateFormData = (field: string, value: any) => {
+  const updateFormData = (field: string, value: string | number) => {
     setFormData(prev => ({ ...prev, [field]: value }));
     if (errors[field]) {
       setErrors(prev => ({ ...prev, [field]: '' }));
     }
   };
 
-  const updateConfig = (field: string, value: any) => {
+  const updateConfig = (field: string, value: string | number | boolean) => {
     setFormData(prev => ({
       ...prev,
       config: { ...prev.config, [field]: value }

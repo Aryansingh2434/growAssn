@@ -59,7 +59,7 @@ export const ChartWidget: React.FC<ChartWidgetProps> = ({ widget }) => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [widget.apiKey, widget.apiEndpoint, timeInterval]);
 
   useEffect(() => {
     fetchData();

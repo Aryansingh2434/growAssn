@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Search, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Widget, FinancialData } from '../../types';
 import { WidgetWrapper } from './WidgetWrapper';
@@ -23,7 +23,7 @@ export const TableWidget: React.FC<TableWidgetProps> = ({ widget }) => {
   const showSearch = widget.config.showSearch !== false;
   const showPagination = widget.config.showPagination !== false;
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     if (!widget.apiKey) {
       setError('API key is required. Please add your API key in Settings.');
       return;
@@ -56,12 +56,12 @@ export const TableWidget: React.FC<TableWidgetProps> = ({ widget }) => {
         setData(validData);
         setFilteredData(validData);
       }
-    } catch (err: any) {
-      setError(err.message || 'Failed to fetch data');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to fetch data');
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [widget.apiKey]);
 
   useEffect(() => {
     fetchData();
@@ -70,7 +70,7 @@ export const TableWidget: React.FC<TableWidgetProps> = ({ widget }) => {
       const interval = setInterval(fetchData, widget.refreshInterval * 1000);
       return () => clearInterval(interval);
     }
-  }, [widget.apiKey, widget.refreshInterval]);
+  }, [fetchData, widget.refreshInterval]);
 
   useEffect(() => {
     if (searchTerm) {

@@ -81,7 +81,7 @@ const dashboardSlice = createSlice({
       saveStateToStorage(state);
     },
     
-    updateWidgetData: (state, action: PayloadAction<{ id: string; data: any }>) => {
+    updateWidgetData: (state, action: PayloadAction<{ id: string; data: unknown }>) => {
       const widget = state.widgets.find(w => w.id === action.payload.id);
       if (widget) {
         widget.lastUpdated = new Date();
